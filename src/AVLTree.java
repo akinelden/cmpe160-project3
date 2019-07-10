@@ -133,6 +133,12 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return makeBalanced(node);
 	}
 
+	/**
+	 * Calculates the balance factor of the given node,
+	 * and makes rotation if necessary.
+	 * @param node The node whose balance is controlled
+	 * @return The node at that location after rotation
+	 */
 	private Node<T> makeBalanced(Node<T> node){
 		int balance = height(node.left) - height(node.right);
 		if (balance > 1) {
@@ -151,6 +157,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return node;
 	}
 
+	/**
+	 * Makes the necessary right rotation to maintain balance
+	 * @param node The node to be rotated
+	 * @return The parent of the given node after rotation 
+	 */
 	private Node<T> rightRotate(Node<T> node) {
 		Node<T> leftNode = node.left;
 		Node<T> leftRightNode = leftNode.right;
@@ -164,6 +175,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return leftNode;
 	}
 
+	/**
+	 * Makes the necessary left rotation to maintain balance
+	 * @param node The node to be rotated
+	 * @return The parent of the given node after rotation 
+	 */
 	private Node<T> leftRotate(Node<T> node) {
 		Node<T> rightNode = node.right;
 		Node<T> rightLeftNode = rightNode.left;
@@ -177,6 +193,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return rightNode;
 	}
 
+	/**
+	 * Makes the necessary left-right rotation to maintain balance
+	 * @param node The node to be rotated
+	 * @return The parent of the given node after double rotation 
+	 */
 	private Node<T> leftRightRotate(Node<T> node) {
 		Node<T> leftNode = node.left;
 		Node<T> leftRightNode = node.left.right;
@@ -189,6 +210,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return rightRotate(node);
 	}
 
+	/**
+	 * Makes the necessary right-left rotation to maintain balance
+	 * @param node The node to be rotated
+	 * @return The parent of the given node after double rotation 
+	 */
 	private Node<T> rightLeftRotate(Node<T> node) {
 		Node<T> rightNode = node.right;
 		Node<T> rightLeftNode = node.right.left;
@@ -210,13 +236,8 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 	 * @param element Element to be deleted
 	 */
 	public void delete(T element) {
-		delete(element,root);
-
-	}
-
-	private void delete(T element, Node<T> startingNode){
 		ArrayList<Node<T>> array = new ArrayList<>();
-		searchElementAndParent(array, startingNode, element);
+		searchElementAndParent(array, root, element);
 		Node<T> node = null;
 		Node<T> parent = null;
 		if(array.size()>0){
@@ -231,7 +252,7 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		if(node.right!=null){
 			Node<T> biggerMostLeft = findMostLeftNode(node.right);
 			T leftData = biggerMostLeft.data;
-			delete(leftData, node);
+			delete(leftData);
 			node.data = leftData;
 		}
 		else if(node.left!=null){
@@ -254,6 +275,12 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		root = updateHeightAndBalanceAboveAndBelowElement(root, node.data, true);
 	}
 
+	/**
+	 * Retrieves the smallest node in the subtree of given node
+	 * 
+	 * @param node The node whose subtree is to be searched
+	 * @return The smallest node in the subtree
+	 */
 	private Node<T> findMostLeftNode(Node<T> node){
 		if(node.left == null){
 			return node;
@@ -261,6 +288,21 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return findMostLeftNode(node.left);
 	}
 
+	/**
+	 * Updates the height and balance factors of all parents and children of the node 
+	 * whose data is equal to <code>element</code> 
+	 * starting from the <code>node</code> and going downward.
+	 * Rotation operations are done if necessary.
+	 * This function doesn't traverse and update cousins or siblings
+	 * of parents.
+	 * This function is used after a node whose data is equal to <code>element</code>
+	 * is deleted.
+	 * 
+	 * @param node The node whose below is to be updated
+	 * @param element The data of the deleted element
+	 * @param isAbove Whether the current node is above the node of element or not
+	 * @return Balanced node at that location
+	 */
 	private Node<T> updateHeightAndBalanceAboveAndBelowElement(Node<T> node, T element, boolean isAbove){
 		if(node == null){
 			return null;
@@ -277,18 +319,6 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		node.height = Integer.max(height(node.left), height(node.right))+1;
 		return makeBalanced(node);
 	}
-
-	/*
-	private Node<T> calculateHeightAndBalanceSubtree(Node<T> node){
-		if(node == null){
-			return null;
-		}
-		calculateHeightAndBalanceSubtree(node.left);
-		calculateHeightAndBalanceSubtree(node.right);
-		node.height =Integer.max(height(node.left),height(node.right))+1;
-		return makeBalanced(node);
-	}
-	*/
 
 	/**
 	 * The height of a node is defined as the number of edges
@@ -333,6 +363,12 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return list;
 	}
 
+	/**
+	 * The recursive function to traverse tree in order.
+	 * 
+	 * @param list List of nodes traversed
+	 * @param node The next node to be traversed
+	 */
 	private void inOrderTraversal(ArrayList<T> list, Node<T> node) {
 		if (node == null) {
 			return;
@@ -420,7 +456,7 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 	 * @param element The element to be searched
 	 * @return The Node containing element or null if element couldn't found
 	 */
-	private int elementLevel(Node<T> node, T element) throws NullPointerException {
+	private int elementLevel(Node<T> node, T element){
 		if (node == null) {
 			return Integer.MIN_VALUE;
 		}
