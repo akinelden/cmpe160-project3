@@ -130,16 +130,19 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		}
 
 		node.height = Integer.max(height(node.left), height(node.right)) + 1;
+		return makeBalanced(node);
+	}
 
+	private Node<T> makeBalanced(Node<T> node){
 		int balance = height(node.left) - height(node.right);
 		if (balance > 1) {
-			if (node.left.data.compareTo(element) > 0) {
+			if (height(node.left.left) > height(node.left.right)) {
 				return rightRotate(node);
 			} else {
 				return leftRightRotate(node);
 			}
 		} else if (balance < -1) {
-			if (node.right.data.compareTo(element) < 0) {
+			if (height(node.right.right) > height(node.right.left)) {
 				return leftRotate(node);
 			} else {
 				return rightLeftRotate(node);
@@ -155,6 +158,9 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		leftNode.right = node;
 		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		leftNode.height = Integer.max(height(leftNode.left), height(leftNode.right)) + 1;
+		if(node == root){
+			root = leftNode;
+		}
 		return leftNode;
 	}
 
@@ -165,6 +171,9 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		rightNode.left = node;
 		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		rightNode.height = Integer.max(height(rightNode.left), height(rightNode.right)) + 1;
+		if(node == root){
+			root = rightNode;
+		}
 		return rightNode;
 	}
 
@@ -174,9 +183,9 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		node.left = leftRightNode;
 		leftNode.right = leftRightNode.left;
 		leftRightNode.left = leftNode;
-		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		leftNode.height = Integer.max(height(leftNode.left), height(leftNode.right)) + 1;
 		leftRightNode.height = Integer.max(height(leftRightNode.left), height(leftRightNode.right)) + 1;
+		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		return rightRotate(node);
 	}
 
@@ -186,9 +195,9 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		node.right = rightLeftNode;
 		rightNode.left = rightLeftNode.right;
 		rightLeftNode.right = rightNode;
-		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		rightNode.height = Integer.max(height(rightNode.left), height(rightNode.right)) + 1;
 		rightLeftNode.height = Integer.max(height(rightLeftNode.left), height(rightLeftNode.right)) + 1;
+		node.height = Integer.max(height(node.left), height(node.right)) + 1;
 		return leftRotate(node);
 	}
 
@@ -224,14 +233,14 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 			T leftData = biggerMostLeft.data;
 			delete(leftData, node);
 			node.data = leftData;
-			calculateHeightOfSubtree(node);
+			calculateHeightAndBalanceSubtree(node);
 			updateHeightUntilElement(root, node.data);
 		}
 		else if(node.left!=null){
 			node.data = node.left.data;
-			node.left = node.left.left;
 			node.right = node.left.right;
-			calculateHeightOfSubtree(node);
+			node.left = node.left.left;
+			calculateHeightAndBalanceSubtree(node);
 			updateHeightUntilElement(root, node.data);
 		}
 		else if(parent == null){
@@ -244,7 +253,7 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 			else{
 				parent.right = null;
 			}
-			calculateHeightOfSubtree(parent);
+			calculateHeightAndBalanceSubtree(parent);
 			updateHeightUntilElement(root, parent.data);
 		}
 	}
@@ -271,11 +280,12 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		}
 	}
 
-	private int calculateHeightOfSubtree(Node<T> node){
+	private int calculateHeightAndBalanceSubtree(Node<T> node){
 		if(node == null){
 			return 0;
 		}
-		node.height =Integer.max(calculateHeightOfSubtree(node.left),calculateHeightOfSubtree(node.right))+1;
+		node.height =Integer.max(calculateHeightAndBalanceSubtree(node.left),calculateHeightAndBalanceSubtree(node.right))+1;
+		node = makeBalanced(node);
 		return node.height;
 	}
 
