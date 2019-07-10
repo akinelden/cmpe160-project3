@@ -136,13 +136,13 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 	private Node<T> makeBalanced(Node<T> node){
 		int balance = height(node.left) - height(node.right);
 		if (balance > 1) {
-			if (height(node.left.left) > height(node.left.right)) {
+			if (height(node.left.left) >= height(node.left.right)) {
 				return rightRotate(node);
 			} else {
 				return leftRightRotate(node);
 			}
 		} else if (balance < -1) {
-			if (height(node.right.right) > height(node.right.left)) {
+			if (height(node.right.right) >= height(node.right.left)) {
 				return leftRotate(node);
 			} else {
 				return rightLeftRotate(node);
@@ -233,15 +233,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 			T leftData = biggerMostLeft.data;
 			delete(leftData, node);
 			node.data = leftData;
-			calculateHeightAndBalanceSubtree(node);
-			updateHeightUntilElement(root, node.data);
 		}
 		else if(node.left!=null){
 			node.data = node.left.data;
 			node.right = node.left.right;
 			node.left = node.left.left;
-			calculateHeightAndBalanceSubtree(node);
-			updateHeightUntilElement(root, node.data);
 		}
 		else if(parent == null){
 			root = null;
@@ -253,9 +249,9 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 			else{
 				parent.right = null;
 			}
-			calculateHeightAndBalanceSubtree(parent);
-			updateHeightUntilElement(root, parent.data);
+			node = parent;
 		}
+		root = updateHeightAndBalanceAboveAndBelowElement(root, node.data, true);
 	}
 
 	private Node<T> findMostLeftNode(Node<T> node){
@@ -265,29 +261,34 @@ public class AVLTree<T extends Comparable<T>> implements AVLTreeInterface<T> {
 		return findMostLeftNode(node.left);
 	}
 
-	private int updateHeightUntilElement(Node<T> startingNode, T element){
-		if(startingNode == null){
-			return 0;
+	private Node<T> updateHeightAndBalanceAboveAndBelowElement(Node<T> node, T element, boolean isAbove){
+		if(node == null){
+			return null;
 		}
-		if(startingNode.data.compareTo(element)==0){
-			return startingNode.height;
+		if(node.data.compareTo(element)==0){
+			isAbove = false;
 		}
-		if(startingNode.data.compareTo(element)>0){
-			return startingNode.height = Integer.max(updateHeightUntilElement(startingNode.left, element), startingNode.right.height);
+		if(node.data.compareTo(element)>0 || !isAbove){
+			node.left = updateHeightAndBalanceAboveAndBelowElement(node.left, element, isAbove);
 		}
-		else{
-			return startingNode.height = Integer.max(updateHeightUntilElement(startingNode.right, element), startingNode.left.height);
+		if(node.data.compareTo(element)<0 || !isAbove){
+			node.right = updateHeightAndBalanceAboveAndBelowElement(node.right, element, isAbove);
 		}
+		node.height = Integer.max(height(node.left), height(node.right))+1;
+		return makeBalanced(node);
 	}
 
-	private int calculateHeightAndBalanceSubtree(Node<T> node){
+	/*
+	private Node<T> calculateHeightAndBalanceSubtree(Node<T> node){
 		if(node == null){
-			return 0;
+			return null;
 		}
-		node.height =Integer.max(calculateHeightAndBalanceSubtree(node.left),calculateHeightAndBalanceSubtree(node.right))+1;
-		node = makeBalanced(node);
-		return node.height;
+		calculateHeightAndBalanceSubtree(node.left);
+		calculateHeightAndBalanceSubtree(node.right);
+		node.height =Integer.max(height(node.left),height(node.right))+1;
+		return makeBalanced(node);
 	}
+	*/
 
 	/**
 	 * The height of a node is defined as the number of edges
